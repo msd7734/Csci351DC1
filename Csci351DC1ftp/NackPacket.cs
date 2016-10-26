@@ -10,7 +10,8 @@ namespace Csci351DC1ftp
     {
         public short BlockNum { get; private set; }
 
-        public NackPacket(short blockNum) : base(Opcode.NACK)
+        public NackPacket(short blockNum)
+            : base(Opcode.NACK)
         {
             BlockNum = blockNum;
         }

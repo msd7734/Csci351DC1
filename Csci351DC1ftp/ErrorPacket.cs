@@ -12,7 +12,8 @@ namespace Csci351DC1ftp
 
         public string ErrorMsg { get; private set; }
 
-        public ErrorPacket(short errNum, string errMsg) : base(Opcode.ERROR)
+        public ErrorPacket(short errNum, string errMsg)
+            : base(Opcode.ERROR)
         {
             ErrorNum = errNum;
             ErrorMsg = errMsg;

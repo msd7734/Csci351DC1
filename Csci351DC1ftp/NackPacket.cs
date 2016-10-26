@@ -17,9 +17,9 @@ namespace Csci351DC1ftp
 
         public override byte[] GetBytes()
         {
-            byte[] b1 = BitConverter.GetBytes((short)Opcode);
-            byte[] b2 = BitConverter.GetBytes(BlockNum);
-            return b1.Concat(b2).ToArray();
+            byte[] opcBytes = BitConverter.GetBytes((short)this.Opcode);
+            byte[] blknumBytes = BitConverter.GetBytes(BlockNum);
+            return opcBytes.Concat(blknumBytes).ToArray();
         }
     }
 }

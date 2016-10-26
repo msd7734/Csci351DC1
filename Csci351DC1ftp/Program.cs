@@ -37,6 +37,14 @@ namespace Csci351DC1ftp
             Console.WriteLine(Encoding.ASCII.GetString(bytes, 4, bytes.Length - 4));
         }
 
+        static void DataPacketTest()
+        {
+            DataPacket p = new DataPacket(1, new byte[] { 0xF, 0xA, 0xB, 0x0, 0xF0, 0x0, 0x0 });
+            p.Data.Take(-1);
+            Console.WriteLine(p.GetTruncatedData().Length);
+            PrintByteArr(p.GetTruncatedData());
+        }
+
         static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)
@@ -48,7 +56,7 @@ namespace Csci351DC1ftp
 
         public static void Main(string[] args)
         {
-            ErrPacketTest();
+            DataPacketTest();
 
             // wait to end
             Console.ReadKey(true);

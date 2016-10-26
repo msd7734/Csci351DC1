@@ -52,6 +52,16 @@ namespace Csci351DC1ftp
             }
             return res;
         }
+
+        /// <summary>
+        /// Convert a byte to a fixed-length binary string representation (used for testing).
+        /// </summary>
+        /// <param name="b">The byte to convert.</param>
+        /// <returns>A binary string representation of b.</returns>
+        public static string ByteToBinStr(byte b)
+        {
+            return Convert.ToString(b, 2).PadLeft(8, '0');
+        }
     }
 
     /// <summary>

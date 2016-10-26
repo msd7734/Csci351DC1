@@ -38,8 +38,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AckPacket.cs" />
     <Compile Include="Bits.cs" />
+    <Compile Include="DataPacket.cs" />
+    <Compile Include="ErrorPacket.cs" />
+    <Compile Include="NackPacket.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="RequestCorruptedPacket.cs" />
+    <Compile Include="RequestPacket.cs" />
+    <Compile Include="TFTPPacket.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -26,11 +26,11 @@ namespace Csci351DC1ftp
             byte[] opcBytes = BitConverter.GetBytes((short)this.Opcode);
             byte[] errnBytes = BitConverter.GetBytes(ErrorNum);
             byte[] errmsgBytes = Encoding.ASCII.GetBytes(ErrorMsg);
-            byte[] res = { 0x0 };
+            byte[] nul = { 0x0 };
 
             return opcBytes.Concat(errnBytes)
                 .Concat(errmsgBytes)
-                .Concat(res).ToArray();
+                .Concat(nul).ToArray();
         }
     }
 }

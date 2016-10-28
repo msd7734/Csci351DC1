@@ -18,6 +18,9 @@ namespace Csci351DC1ftp
 
     public abstract class TFTPPacket
     {
+        /// <summary>
+        /// Get the Opcode that represents this packet.
+        /// </summary>
         public Opcode Opcode { get; private set; }
 
         public TFTPPacket(Opcode opcode)
@@ -25,6 +28,10 @@ namespace Csci351DC1ftp
             this.Opcode = opcode;
         }
 
+        /// <summary>
+        /// Get the raw byte representation of this packet.
+        /// </summary>
+        /// <returns>An array of bytes.</returns>
         public abstract byte[] GetBytes();
 
     }

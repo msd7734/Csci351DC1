@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Sockets;
+using System.Net;
 
 namespace Csci351DC1ftp
 {
@@ -28,7 +30,7 @@ namespace Csci351DC1ftp
 
         static void ErrPacketTest()
         {
-            ErrorPacket p = new ErrorPacket(4, "Some crap went wrong.");
+            ErrorPacket p = new ErrorPacket(4, "Some stuff went wrong.");
             byte[] bytes = p.GetBytes();
             PrintByteArr(bytes);
 
@@ -69,6 +71,7 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
+            
             HammingClient client = new HammingClient(reqType, hostName, fileName);
             if (client.IsConnected())
             {

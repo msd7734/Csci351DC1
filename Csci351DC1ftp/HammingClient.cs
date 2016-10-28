@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Net;
 
 namespace Csci351DC1ftp
 {
@@ -16,7 +17,7 @@ namespace Csci351DC1ftp
         Error
     }
 
-    public class HammingClient
+    public class HammingClient : IDisposable
     {
         // Server always listens on port 7000
         private static readonly int PORT = 7000;
@@ -24,7 +25,7 @@ namespace Csci351DC1ftp
         private static readonly Dictionary<string, string> SPECIAL_HOSTS =
             new Dictionary<string, string>()
             {
-                {"kayrun", "kayrun.cs.edu"},
+                {"kayrun", "kayrun.cs.rit.edu"},
                 {"localhost", "localhost"} // re-check how to connect on localhost!
             };
 
@@ -66,11 +67,17 @@ namespace Csci351DC1ftp
 
             try
             {
-                this._con.Connect(ConvertSpecialHostName(remote), PORT);
+                string parsedRemote = ConvertSpecialHostName(remote);
+
+                if (parsedRemote == "localhost")
+                    this._con.Connect(IPAddress.Loopback, PORT);
+                else
+                    this._con.Connect(parsedRemote, PORT);
             }
             catch (SocketException se)
             {
                 // allow connection to fail, IsConnected method will report not connected
+                Console.WriteLine(se.Message);
             }
             catch (Exception e)
             {
@@ -87,7 +94,7 @@ namespace Csci351DC1ftp
                 );
             }
 
-            
+            Console.WriteLine("We did it, fam.");
         }
 
         /// <summary>
@@ -97,6 +104,11 @@ namespace Csci351DC1ftp
         public bool IsConnected()
         {
             return _con.Connected;
+        }
+
+        public void Dispose()
+        {
+            this._con.Close();
         }
     }
 }

@@ -50,6 +50,10 @@ namespace Csci351DC1ftp
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Get the data from the packet with trailing null bytes truncated.
+        /// </summary>
+        /// <returns>The truncated data as a byte array.</returns>
         public byte[] GetTruncatedData()
         {
             // starting index of null bytes

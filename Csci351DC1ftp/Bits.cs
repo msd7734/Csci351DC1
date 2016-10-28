@@ -69,7 +69,7 @@ namespace Csci351DC1ftp
     /// </summary>
     public class BitOpException : Exception
     {
-        private static string defaultMessage = "An invalid bit operation was performed.";
+        private static readonly string defaultMessage = "An invalid bit operation was performed.";
 
         public BitOpException() : base(defaultMessage) { }
 

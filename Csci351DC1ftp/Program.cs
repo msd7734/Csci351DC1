@@ -54,9 +54,21 @@ namespace Csci351DC1ftp
             Console.WriteLine();
         }
 
+        static readonly string USAGE_MSG = "Usage : [mono] HammingTFTP.exe [ error | noerror ] tftp−host file";
+
         public static void Main(string[] args)
         {
-            DataPacketTest();
+            if (args.Length != 3)
+            {
+                Console.WriteLine(USAGE_MSG);
+                Console.ReadKey();
+            }
+
+            RequestType reqType = (RequestType) Enum.Parse(typeof(RequestType), args[0], ignoreCase:true);
+            string hostName = args[1];
+            string fileName = args[2];
+
+            
 
             // wait to end
             Console.ReadKey(true);

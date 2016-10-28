@@ -62,13 +62,18 @@ namespace Csci351DC1ftp
             {
                 Console.WriteLine(USAGE_MSG);
                 Console.ReadKey();
+                return;
             }
 
             RequestType reqType = (RequestType) Enum.Parse(typeof(RequestType), args[0], ignoreCase:true);
             string hostName = args[1];
             string fileName = args[2];
 
-            
+            HammingClient client = new HammingClient(reqType, hostName, fileName);
+            if (client.IsConnected())
+            {
+                client.Retrieve();
+            }
 
             // wait to end
             Console.ReadKey(true);

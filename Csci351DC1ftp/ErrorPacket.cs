@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace Csci351DC1ftp
 {
@@ -23,8 +24,8 @@ namespace Csci351DC1ftp
         {
             // remember converting str => bytes does NOT include null terminator
 
-            byte[] opcBytes = BitConverter.GetBytes((short)this.Opcode);
-            byte[] errnBytes = BitConverter.GetBytes(ErrorNum);
+            byte[] opcBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)this.Opcode));
+            byte[] errnBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(ErrorNum));
             byte[] errmsgBytes = Encoding.ASCII.GetBytes(ErrorMsg);
             byte[] nul = { 0x0 };
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace Csci351DC1ftp
 {
@@ -18,8 +19,8 @@ namespace Csci351DC1ftp
 
         public override byte[] GetBytes()
         {
-            byte[] opcBytes = BitConverter.GetBytes((short)this.Opcode);
-            byte[] blknumBytes = BitConverter.GetBytes(BlockNum);
+            byte[] opcBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)this.Opcode));
+            byte[] blknumBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(BlockNum));
             return opcBytes.Concat(blknumBytes).ToArray();
         }
     }

@@ -22,6 +22,9 @@ namespace Csci351DC1ftp
         // Server always listens on port 7000
         private static readonly int PORT = 7000;
 
+        // Timeout after 10 seconds
+        private static readonly int TIMEOUT = 1000 * 12;
+
         private static readonly Dictionary<string, string> SPECIAL_HOSTS =
             new Dictionary<string, string>()
             {
@@ -70,6 +73,7 @@ namespace Csci351DC1ftp
         {
             this._reqType = reqType;
             this._con = new UdpClient();
+            this._con.Client.ReceiveTimeout = TIMEOUT;
             this._fileName = fileName;
 
             try
@@ -115,7 +119,17 @@ namespace Csci351DC1ftp
             byte[] bytes = datagram.GetBytes();
             this._con.Send(bytes, bytes.Length);
 
-            byte[] resp = this._con.Receive(ref this._remoteEP);
+            byte[] resp;
+
+            try
+            {
+                resp = this._con.Receive(ref this._remoteEP);
+            }
+            catch (SocketException se)
+            {
+                throw new Exception("Failed to get a response from the server (likely due to a timeout).", se);
+            }
+
             short respCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 0));
 
             if ((Opcode)respCode == Opcode.DATA)

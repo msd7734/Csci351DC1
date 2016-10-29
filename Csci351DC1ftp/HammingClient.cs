@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
+using System.IO;
 
 namespace Csci351DC1ftp
 {
@@ -24,6 +25,13 @@ namespace Csci351DC1ftp
 
         // Timeout after 10 seconds
         private static readonly int TIMEOUT = 1000 * 12;
+
+        // The max number of data bytes expected in a data packet
+        private static readonly int MAX_DATA_SIZE = 512;
+        // ...which are Hamming encoded in 32-bit (4 byte) blocks
+        private static int BLK_SIZE = 4;
+        // Indeces of Hamming parity bits
+        private static byte[] HAMMING_BIT_INDECES = { 0, 1, 3, 7, 15, 31 };
 
         private static readonly Dictionary<string, string> SPECIAL_HOSTS =
             new Dictionary<string, string>()
@@ -115,12 +123,82 @@ namespace Csci351DC1ftp
                 datagram = new RequestPacket(this._fileName);
             }
 
+            TFTPPacket response = ReceiveDatagram(datagram);
 
-            byte[] bytes = datagram.GetBytes();
+            if (response.Opcode == Opcode.DATA)
+            {
+                HandleData((DataPacket)response);
+            }
+            else
+            {
+                // implicitly an error packet
+                ReportError((ErrorPacket)response);
+            }
+        }
+
+        private void HandleData(DataPacket firstPacket)
+        {
+            DataPacket mostRecentData = firstPacket;
+            TFTPPacket resp;
+
+            using (FileStream file = new FileStream(this._fileName, FileMode.Create))
+            {
+                byte[] trueData;
+                do
+                {
+                    // There's potentially a really annoying edge case here where there are trailing null bytes
+                    // but the next packet has valid data. So null-byte padding that just happens to fall on a packet boundary:
+                    //      [..., 0x0, 0x0, 0x0, 0x0] | [0xF0, 0xD3, 0x18, ...]
+                    // The way to fix this might be to write two packets at a time?
+                    // But if you're saving one and checking on the next one, it's possible there will be no next packet (timeout).
+                    // Either need to add filesize or total expected incoming blocks to the protocol, or just assume this edge case won't happen.
+                    // Since we can't change the protocol, assume it won't happen.
+
+                    trueData = UnhamData(mostRecentData.GetTruncatedData());
+
+                    file.Write(trueData, 0, trueData.Length);
+                    resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
+
+                    if (resp.Opcode == Opcode.DATA)
+                    {
+                        mostRecentData = (DataPacket)resp;
+                    }
+                    else
+                    {
+                        // implicitly an error packet
+                        ReportError((ErrorPacket)resp);
+                        return;
+                    }
+
+                } while (trueData.Length == MAX_DATA_SIZE);
+                
+            }
+
+            // not handling error correction as of yet
+        }
+
+        private byte[] UnhamData(byte[] data)
+        {
+            //mmm, ham...
+
+            // 1. Invert byte order so that the hamming bits can be properly extracted/read
+            // 2. Save extra trailing bits
+            // 3. Append the trailing bits from the previous step (if any) as LEADING bits
+            // 4. The trailing bits are now the trailing produced from the append, followed by the trailing from this step
+            // 5. Invert full bytes back so they're in the order that properly translates to the data
+            // 6. Read the next four bytes and repeat at 1. until data is consumed
+
+
+
+            return null;
+        }
+
+        private TFTPPacket ReceiveDatagram(TFTPPacket toSend)
+        {
+            byte[] bytes = toSend.GetBytes();
             this._con.Send(bytes, bytes.Length);
 
             byte[] resp;
-
             try
             {
                 resp = this._con.Receive(ref this._remoteEP);
@@ -134,18 +212,25 @@ namespace Csci351DC1ftp
 
             if ((Opcode)respCode == Opcode.DATA)
             {
-                Console.WriteLine("Got that data, boi.");
+                short blockNum = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 2));
+                byte[] data = resp.TakeWhile((x, index) => index > 3).ToArray();
+                return new DataPacket(blockNum, data);
             }
             else if ((Opcode)respCode == Opcode.ERROR)
             {
                 short errNum = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 2));
                 string msg = BitConverter.ToString(resp, 4);
-                Console.WriteLine("The server returned an error: {0} {1}", errNum, msg);
+                return new ErrorPacket(errNum, msg);
             }
             else
             {
                 throw new Exception(String.Format("Unexpected response from server: code {0}", respCode));
             }
+        }
+
+        private void ReportError(ErrorPacket err)
+        {
+            Console.WriteLine("The server returned an error: {0} {1}", err.ErrorNum, err.ErrorMsg);
         }
 
         public void Dispose()

@@ -25,6 +25,14 @@ namespace Csci351DC1ftp
             return Convert.ToByte(((b >> nbit) & 0x01));
         }
 
+        public static UInt32 NthBit(UInt32 i32, byte nbit)
+        {
+            if (nbit > 31 || nbit < 0)
+                throw new BitOpException("The bit index provided was out of bounds for a 32-bit int.");
+
+            return Convert.ToByte(((i32 >> nbit) & 0x01));
+        }
+
         /// <summary>
         /// Return a byte with the bits at the given indeces removed.
         /// </summary>
@@ -54,6 +62,52 @@ namespace Csci351DC1ftp
         }
 
         /// <summary>
+        /// Return an unsigned 32-bit int with the bits at the given indeces removed.
+        /// </summary>
+        /// <param name="b">The int to operate on.</param>
+        /// <param name="snip">An array of indeces to snip.</param>
+        /// <returns>The "snipped" int.</returns>
+        public static UInt32 SnipBits(UInt32 i32, byte[] snip)
+        {
+            if (snip.Length == 0)
+                return i32;
+
+            uint res = 0;
+            int skipped = 0;
+            for (byte i = 0; i < 32; ++i)
+            {
+                if (snip.Contains(i))
+                {
+                    skipped += 1;
+                }
+                else
+                {
+                    res += Convert.ToUInt32(Math.Pow(2, i - skipped) * NthBit(i32, i));
+                }
+
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Return the index of the highest order "1" bit of a byte.
+        /// </summary>
+        /// <param name="b">The byte to check</param>
+        /// <returns>A bit index (0-7). A null byte (0x0) returns 0.</returns>
+        public static int HighestOrderBit(byte b)
+        {
+            if (b == 0x0)
+                return 0;
+
+            int i;
+            for (i = -1; b != 0x0; ++i)
+            {
+                b = (byte)(b >> 1);
+            }
+            return i;
+        }
+
+        /// <summary>
         /// Convert a byte to a fixed-length binary string representation (used for testing).
         /// </summary>
         /// <param name="b">The byte to convert.</param>
@@ -61,6 +115,11 @@ namespace Csci351DC1ftp
         public static string ByteToBinStr(byte b)
         {
             return Convert.ToString(b, 2).PadLeft(8, '0');
+        }
+
+        public static String Int32ToBinStr(UInt32 i)
+        {
+            return Convert.ToString(i, 2).PadLeft(32, '0');
         }
     }
 

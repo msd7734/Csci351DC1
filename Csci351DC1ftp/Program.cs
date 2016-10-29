@@ -10,12 +10,29 @@ namespace Csci351DC1ftp
 {
     class Program
     {
-        static void SnipBitsTest()
+        static void SnipBitsTestByte()
         {
             // 0b10010111
             byte b = 0x97;
             Console.WriteLine(Bits.SnipBits(b, new byte[]{0, 1, 2}));
             Console.WriteLine(Bits.SnipBits(b, new byte[] { 7 }));
+        }
+
+        static void SnipBitsTestInt32()
+        {
+            uint i = 0xA01297;
+            Console.WriteLine(Bits.Int32ToBinStr(i));
+            Console.WriteLine(Bits.Int32ToBinStr(Bits.SnipBits(i, new byte[] { 0, 1, 3, 7, 15, 31 })));
+        }
+
+        static void HighestOrderBitTest()
+        {
+            byte b1 = 0x10;
+            byte b2 = 0x01;
+            byte b3 = 0xF0;
+            Console.WriteLine("{0} : {1}", Bits.ByteToBinStr(b1), Bits.HighestOrderBit(b1));
+            Console.WriteLine("{0} : {1}", Bits.ByteToBinStr(b2), Bits.HighestOrderBit(b2));
+            Console.WriteLine("{0} : {1}", Bits.ByteToBinStr(b3), Bits.HighestOrderBit(b3));
         }
 
         static void NackPacketTest()
@@ -60,6 +77,8 @@ namespace Csci351DC1ftp
 
         public static void Main(string[] args)
         {
+
+            /*
             if (args.Length != 3)
             {
                 Console.WriteLine(USAGE_MSG);
@@ -73,7 +92,9 @@ namespace Csci351DC1ftp
 
             HammingClient client = new HammingClient(reqType, hostName, fileName);
             client.Retrieve();
-                       
+            */
+
+            HighestOrderBitTest();
 
             // wait to end
             Console.ReadKey(true);

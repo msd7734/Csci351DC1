@@ -26,12 +26,19 @@ namespace Csci351DC1ftp
             new Dictionary<string, string>()
             {
                 {"kayrun", "kayrun.cs.rit.edu"},
-                {"localhost", "localhost"} // re-check how to connect on localhost!
+                {"localhost", "127.0.0.1."}
             };
 
         private RequestType _reqType;
-        private TcpClient _con;
+        private UdpClient _con;
         private string _fileName;
+        private IPEndPoint _remoteEP;
+
+        /// <summary>
+        /// Whether this client has successfully connected to a remote host.
+        /// </summary>
+        /// <returns>True if connected, false otherwise.</returns>
+        public bool Connected { get; private set; }
 
         /// <summary>
         /// Convert a hostname to a special remote known to the HammingClient, if possible.
@@ -62,48 +69,57 @@ namespace Csci351DC1ftp
         public HammingClient(RequestType reqType, string remote, string fileName)
         {
             this._reqType = reqType;
-            this._con = new TcpClient();
+            this._con = new UdpClient();
             this._fileName = fileName;
 
             try
             {
                 string parsedRemote = ConvertSpecialHostName(remote);
-
-                if (parsedRemote == "localhost")
-                    this._con.Connect(IPAddress.Loopback, PORT);
-                else
-                    this._con.Connect(parsedRemote, PORT);
+                this._con.Connect(parsedRemote, PORT);
+                this._remoteEP = (IPEndPoint)this._con.Client.RemoteEndPoint;
+                Connected = true;
             }
             catch (SocketException se)
             {
-                // allow connection to fail, IsConnected method will report not connected
                 Console.WriteLine(se.Message);
+                Connected = false;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Failed to connect to server: {0}", e.Message);
+                Connected = false;
             }
         }
 
         public void Retrieve()
         {
-            if (!IsConnected())
+            if (!Connected)
             {
                 throw new Exception(
                     String.Format("Remote connection is not initialized, so {0} cannot be retrieved.", this._fileName)
                 );
             }
 
-            Console.WriteLine("We did it, fam.");
-        }
+            TFTPPacket datagram;
+            if (this._reqType == RequestType.Error)
+            {
+                datagram = new RequestCorruptedPacket(this._fileName);
+            }
+            else
+            {
+                // implicitly with no error
+                datagram = new RequestPacket(this._fileName);
+            }
 
-        /// <summary>
-        /// Whether this client has successfully connected to a remote host.
-        /// </summary>
-        /// <returns>True if connected, false otherwise.</returns>
-        public bool IsConnected()
-        {
-            return _con.Connected;
+
+            byte[] bytes = datagram.GetBytes();
+            Program.PrintByteArr(bytes);
+            // byte[] bytes = (new AckPacket(0)).GetBytes();
+            this._con.Send(bytes, bytes.Length);
+
+            byte[] resp = this._con.Receive(ref this._remoteEP);
+            short respCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 0));
+            Console.WriteLine("The datagram received was type: {0}", (Opcode)respCode);
         }
 
         public void Dispose()

@@ -47,7 +47,7 @@ namespace Csci351DC1ftp
             PrintByteArr(p.GetTruncatedData());
         }
 
-        static void PrintByteArr(byte[] bytes)
+        public static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)
             {
@@ -71,12 +71,9 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
-            
             HammingClient client = new HammingClient(reqType, hostName, fileName);
-            if (client.IsConnected())
-            {
-                client.Retrieve();
-            }
+            client.Retrieve();
+                       
 
             // wait to end
             Console.ReadKey(true);

@@ -78,7 +78,6 @@ namespace Csci351DC1ftp
         public static void Main(string[] args)
         {
 
-            /*
             if (args.Length != 3)
             {
                 Console.WriteLine(USAGE_MSG);
@@ -92,9 +91,7 @@ namespace Csci351DC1ftp
 
             HammingClient client = new HammingClient(reqType, hostName, fileName);
             client.Retrieve();
-            */
-
-            HighestOrderBitTest();
+            
 
             // wait to end
             Console.ReadKey(true);

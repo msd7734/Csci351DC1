@@ -156,7 +156,9 @@ namespace Csci351DC1ftp
 
                     trueData = UnhamData(mostRecentData.GetTruncatedData());
 
-                    file.Write(trueData, 0, trueData.Length);
+                    Console.WriteLine(mostRecentData.GetBytes().Length);
+
+                    // file.Write(trueData, 0, trueData.Length);
                     resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
 
                     if (resp.Opcode == Opcode.DATA)
@@ -185,12 +187,15 @@ namespace Csci351DC1ftp
             // 2. Save extra trailing bits
             // 3. Append the trailing bits from the previous step (if any) as LEADING bits
             // 4. The trailing bits are now the trailing produced from the append, followed by the trailing from this step
+            // - Trailing from previous: 00
+            // - This step: 10101000 01011010 100110[01 00]
+            // - Prepend previous trailing: 00101010 00010110 10100110 [0100]
             // 5. Invert full bytes back so they're in the order that properly translates to the data
             // 6. Read the next four bytes and repeat at 1. until data is consumed
 
+            Console.WriteLine(data.Length % 4);
 
-
-            return null;
+            return data;
         }
 
         private TFTPPacket ReceiveDatagram(TFTPPacket toSend)
@@ -213,8 +218,12 @@ namespace Csci351DC1ftp
             if ((Opcode)respCode == Opcode.DATA)
             {
                 short blockNum = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 2));
-                byte[] data = resp.TakeWhile((x, index) => index > 3).ToArray();
-                return new DataPacket(blockNum, data);
+                byte[] data = new byte[MAX_DATA_SIZE];
+                for (int i = 0; i < data.Length; ++i)
+                {
+                    data[i] = resp[i + 4];
+                }
+                    return new DataPacket(blockNum, data);
             }
             else if ((Opcode)respCode == Opcode.ERROR)
             {

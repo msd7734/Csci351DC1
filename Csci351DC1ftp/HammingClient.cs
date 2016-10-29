@@ -113,13 +113,25 @@ namespace Csci351DC1ftp
 
 
             byte[] bytes = datagram.GetBytes();
-            Program.PrintByteArr(bytes);
-            // byte[] bytes = (new AckPacket(0)).GetBytes();
             this._con.Send(bytes, bytes.Length);
 
             byte[] resp = this._con.Receive(ref this._remoteEP);
             short respCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 0));
-            Console.WriteLine("The datagram received was type: {0}", (Opcode)respCode);
+
+            if ((Opcode)respCode == Opcode.DATA)
+            {
+                Console.WriteLine("Got that data, boi.");
+            }
+            else if ((Opcode)respCode == Opcode.ERROR)
+            {
+                short errNum = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 2));
+                string msg = BitConverter.ToString(resp, 4);
+                Console.WriteLine("The server returned an error: {0} {1}", errNum, msg);
+            }
+            else
+            {
+                throw new Exception(String.Format("Unexpected response from server: code {0}", respCode));
+            }
         }
 
         public void Dispose()

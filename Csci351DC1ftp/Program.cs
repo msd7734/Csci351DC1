@@ -74,6 +74,16 @@ namespace Csci351DC1ftp
             Console.WriteLine(Bits.TwoBitsToByte(new TwoBit[] { b0, b1, b2, b3 }));
         }
 
+        static void ByteToTwoBitsTest()
+        {
+            byte b = 1;
+            Console.WriteLine(Bits.ByteToTwoBits(b).Length);
+
+            b = 0xF0;
+            Console.WriteLine(Bits.ByteToBinStr(b));
+            Console.WriteLine(Bits.ByteToTwoBits(b).Length);
+        }
+
         public static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)
@@ -98,6 +108,8 @@ namespace Csci351DC1ftp
             RequestType reqType = (RequestType) Enum.Parse(typeof(RequestType), args[0], ignoreCase:true);
             string hostName = args[1];
             string fileName = args[2];
+
+            ByteToTwoBitsTest();
 
             //HammingClient client = new HammingClient(reqType, hostName, fileName);
             //client.Retrieve();

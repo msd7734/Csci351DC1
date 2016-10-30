@@ -26,10 +26,15 @@ namespace Csci351DC1ftp
         // Timeout after 10 seconds
         private static readonly int TIMEOUT = 1000 * 12;
 
-        // The max number of data bytes expected in a data packet
+        // The max number of data bytes expected in a data packet...
         private static readonly int MAX_DATA_SIZE = 512;
+
         // ...which are Hamming encoded in 32-bit (4 byte) blocks
         private static int BLK_SIZE = 4;
+
+        // The max data per packet after removing hamming bits
+        private static int MAX_EXTRACT_DATA_SIZE = MaxExtractedDataSize();
+
         // Indeces of Hamming parity bits
         private static byte[] HAMMING_BIT_INDECES = { 0, 1, 3, 7, 15, 31 };
 
@@ -39,6 +44,16 @@ namespace Csci351DC1ftp
                 {"kayrun", "kayrun.cs.rit.edu"},
                 {"localhost", "127.0.0.1."}
             };
+
+        private static int MaxExtractedDataSize()
+        {
+            // Making it portable for other block sizes!
+            int blockBits = BLK_SIZE * 8;
+            int hammingBits = (int)Math.Log(blockBits, 2) + 1;
+            double byteYieldPerDecode = (blockBits - hammingBits) / 8.0;
+            int extractedDataSize = (int)((MAX_DATA_SIZE / BLK_SIZE) * byteYieldPerDecode);
+            return extractedDataSize;
+        }
 
         private RequestType _reqType;
         private UdpClient _con;
@@ -193,7 +208,10 @@ namespace Csci351DC1ftp
 
             int numBlocks = data.Length / BLK_SIZE;
             byte[] block = new byte[BLK_SIZE];
-            
+            List<TwoBit> extraBits = new List<TwoBit>(4);
+
+            List<byte> unhammed = new List<byte>(MAX_EXTRACT_DATA_SIZE);
+
             for (int i = 0; i < numBlocks; i += BLK_SIZE)
             {
                 Array.Copy(data, i, block, 0, BLK_SIZE);
@@ -202,11 +220,28 @@ namespace Csci351DC1ftp
                 bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
                 block = BitConverter.GetBytes(bits);
 
+                // the fourth byte will at this point contain only the trailing two "leftover" bits
+                byte trailing = block[3];
+
+                // make room to prepend previous leftover bits
+                bits = bits >> (2 * extraBits.Count);
+
+
+
+                // store the trailing bits
+                extraBits.Add(new TwoBit(block[3]));
+                // if we can make a full byte from the trailing bits, we can write that too
+                if (extraBits.Count == 4)
+                {
+                    unhammed.Add(Bits.TwoBitsToByte(extraBits.ToArray()));
+                    extraBits.Clear();
+                }
+
 
                 Array.Clear(block, 0, block.Length);
             }
 
-            return data;
+            return unhammed.ToArray();
         }
 
         private TFTPPacket ReceiveDatagram(TFTPPacket toSend)

@@ -122,12 +122,40 @@ namespace Csci351DC1ftp
             return Convert.ToString(i, 2).PadLeft(32, '0');
         }
 
+        /// <summary>
+        /// Convert an array of 4 bit pairs to a byte.
+        /// </summary>
+        /// <param name="bits">A TwoBit array whose lower indeces indicate lower order bit pairs.</param>
+        /// <returns>A byte with the value of the concatenated bit pairs.</returns>
         public static byte TwoBitsToByte(TwoBit[] bits)
         {
             if (bits.Length != 4)
                 throw new ArgumentOutOfRangeException();
 
             return (byte)(bits[0].AsByte() + (bits[1].AsByte() * 4) + (bits[2].AsByte() * 16) + (bits[3].AsByte() * 64));
+        }
+
+
+        /// <summary>
+        /// Make as many bit pairs as possible from the significant bits of a given byte.
+        /// </summary>
+        /// <param name="b">The byte to split into bit pairs.</param>
+        /// <returns>A TwoBit array of size 0-4 (size 0 if b = 0).</returns>
+        public static TwoBit[] ByteToTwoBits(byte b)
+        {
+            var twoBits = new List<TwoBit>(4);
+
+            if (b == 0x0)
+                return twoBits.ToArray();
+
+            int highestBitInd = HighestOrderBit(b) + 1;
+            for (int i = 0; i < highestBitInd; i += 2)
+            {
+                twoBits.Add(new TwoBit(b));
+                b = (byte)(b >> 2);
+            }
+
+            return twoBits.ToArray();
         }
     }
 

@@ -94,6 +94,18 @@ namespace Csci351DC1ftp
             Console.WriteLine(Bits.ByteToBinStr(Bits.InvertBits(b)));
         }
 
+        static void ThereAndBack()
+        {
+            var tb = Bits.ByteToTwoBits(0x2, 2);
+            Console.WriteLine("{0},{1}", tb[0].AsByte(), tb[1].AsByte());
+            TwoBit b0 = new TwoBit(0, 0);
+            TwoBit b2 = new TwoBit(1, 0);
+            byte res = Bits.TwoBitsToByte(new TwoBit[] { b2, b0 });
+            Console.WriteLine(res);
+            
+            
+        }
+
         public static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)

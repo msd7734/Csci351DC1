@@ -211,19 +211,21 @@ namespace Csci351DC1ftp
             List<TwoBit> extraBits = new List<TwoBit>(4);
 
             List<byte> unhammed = new List<byte>(MAX_EXTRACT_DATA_SIZE);
-
+            bool lastBlock = false;
             for (int i = 0; i < data.Length; i += BLK_SIZE)
             {
-                try
+                lastBlock = ((i + BLK_SIZE) / BLK_SIZE >= numBlocks);
+
+                if (i + BLK_SIZE > data.Length)
+                {
+                    Array.Copy(data, i, block, 0, data.Length - i);
+                }
+                else
                 {
                     Array.Copy(data, i, block, 0, BLK_SIZE);
                 }
-                catch (ArgumentException ae)
-                {
-                    // if possible, find a nicer way to do this
-                    Array.Copy(data, i, block, 0, data.Length - i);
-                }
 
+                Console.Write("Bytes in network byte order: ");
                 Program.PrintByteArr(block);
 
                 if (!BitConverter.IsLittleEndian)
@@ -231,32 +233,36 @@ namespace Csci351DC1ftp
 
                 uint bits = BitConverter.ToUInt32(block, 0);
 
-                Console.WriteLine(Bits.Int32ToBinStr(bits));
+                Console.WriteLine("With hamming bit 1 on the right: {0}", Bits.Int32ToBinStr(bits));
 
                 bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
 
-                Console.WriteLine(Bits.Int32ToBinStr(bits));
+                Console.WriteLine("Hamming bits removed: {0}", Bits.Int32ToBinStr(bits));
 
                 // make room to prepend previous leftover bits
                 bits = bits << (HAMMING_BIT_INDECES.Length - (2 * extraBits.Count));
 
-                Console.WriteLine(Bits.Int32ToBinStr(bits));
+                Console.WriteLine("Shift left to prepend any leftover bits: {0}", Bits.Int32ToBinStr(bits));
 
                 // convert the previous leftover bits to a byte
                 byte extraByte = Bits.TwoBitsToByte(extraBits.ToArray());
+                extraByte = (byte)(Bits.InvertBits(extraByte) >> (8 - (2 * extraBits.Count)));
 
-                Console.WriteLine(Bits.ByteToBinStr(extraByte));
+                Console.WriteLine("The leftover bits: {0}", Bits.ByteToBinStr(extraByte));
 
                 // move the bits to the head of a 32-bit mask
                 uint prependMask =  (uint)(extraByte << (32 - (2 * extraBits.Count)));
 
-                Console.WriteLine(Bits.Int32ToBinStr(prependMask));
+                Console.WriteLine("The mask to be XOR'd: {0}", Bits.Int32ToBinStr(prependMask));
 
                 // XOR the shifted, unhammed bits with the mask
                 bits = bits ^ prependMask;
+
+                Console.WriteLine("Leftover bits prepended: {0}", Bits.Int32ToBinStr(bits));
                 
                 block = BitConverter.GetBytes(bits);
 
+                Console.Write("Hamming order bytes before bit reverse: ");
                 Program.PrintByteArr(block);
 
                 block[0] = Bits.InvertBits(block[0]);
@@ -264,42 +270,71 @@ namespace Csci351DC1ftp
                 block[2] = Bits.InvertBits(block[2]);
                 block[3] = Bits.InvertBits(block[3]);
 
+                Console.Write("Hamming order bytes after bit reverse: ");
                 Program.PrintByteArr(block);
 
                 byte trailingByte = (BitConverter.IsLittleEndian) ? block[0] : block[3];
-                //int extraBitPairs = (Bits.HighestOrderBit(trailingByte) / 2) + 1;
-
 
 
                 // store the new trailing bits (if previously 1 trailing pair, take 2 this time, and so on)
                 TwoBit[] newTrailing = Bits.ByteToTwoBits(trailingByte, extraBits.Count + 1);
+                Console.WriteLine("We will store {0} pairs of leftover bits.", newTrailing.Length);
                 extraBits.Clear();
                 extraBits.AddRange(newTrailing);
 
+                Console.WriteLine("Storing leftover: ", Bits.ByteToBinStr(Bits.TwoBitsToByte(newTrailing)));
+
                 if (BitConverter.IsLittleEndian)
                 {
-                    unhammed.Add(block[3]);
-                    unhammed.Add(block[2]);
-                    unhammed.Add(block[1]);
-
-                    // if we can make a full byte from the trailing bits, we can write it
-                    if (extraBits.Count == 4)
+                    if (lastBlock)
                     {
-                        unhammed.Add(Bits.TwoBitsToByte(extraBits.ToArray()));
-                        extraBits.Clear();
+                        block = TruncateBlock(block);
+                        for (int b = block.Length - 1; b >= 0; --b)
+                            unhammed.Add(block[b]);
                     }
+
+                    else
+                    {
+                        unhammed.Add(block[3]);
+                        Console.WriteLine("Write: {0} ({1})", (char)block[3], block[3]);
+                        unhammed.Add(block[2]);
+                        Console.WriteLine("Write: {0} ({1})", (char)block[2], block[2]);
+                        unhammed.Add(block[1]);
+                        Console.WriteLine("Write: {0} ({1})", (char)block[1], block[1]);
+
+                        // if we can make a full byte from the trailing bits, we can write it
+                        if (extraBits.Count == 4)
+                        {
+                            byte leftover = Bits.TwoBitsToByte(extraBits.ToArray());
+                            Console.WriteLine("Write: {0} ({1})", (char)leftover, leftover);
+                            unhammed.Add(leftover);
+                            extraBits.Clear();
+                        }
+                    }
+                    
                 }
                 else
                 {
-                    unhammed.Add(block[1]);
-                    unhammed.Add(block[2]);
-                    unhammed.Add(block[3]);
-
-                    // if we can make a full byte from the trailing bits, we can write it
-                    if (extraBits.Count == 4)
+                    if (lastBlock)
                     {
-                        unhammed.Add(Bits.TwoBitsToByte(extraBits.ToArray()));
-                        extraBits.Clear();
+                        block = TruncateBlock(block);
+                        for (int b = 0; b < block.Length; ++b)
+                            unhammed.Add(block[b]);
+                    }
+                    else
+                    {
+                        // if we can make a full byte from the trailing bits, we can write it
+                        if (extraBits.Count == 4)
+                        {
+                            byte leftover = Bits.TwoBitsToByte(extraBits.ToArray());
+                            Console.WriteLine("Write: {0} ({1})", (char)leftover, leftover);
+                            unhammed.Add(leftover);
+                            extraBits.Clear();
+                        }
+
+                        unhammed.Add(block[1]);
+                        unhammed.Add(block[2]);
+                        unhammed.Add(block[3]); 
                     }
                 }
 
@@ -309,6 +344,36 @@ namespace Csci351DC1ftp
             }
 
             return unhammed.ToArray();
+        }
+
+        private byte[] TruncateBlock(byte[] b)
+        {
+            // starting index of null bytes
+            int nullStartIndex = -1;
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(b);
+
+            for (int i = 0; i < b.Length; ++i)
+            {
+                if (b[i] == 0x0 && nullStartIndex == -1)
+                {
+                    nullStartIndex = i;
+                }
+                else if (b[i] != 0x0)
+                {
+                    nullStartIndex = -1;
+                }
+            }
+
+            byte[] res = (nullStartIndex >= 0) ?
+                b.Take(nullStartIndex).ToArray() :
+                b;
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(res);
+
+            return res;
         }
 
         private TFTPPacket ReceiveDatagram(TFTPPacket toSend)

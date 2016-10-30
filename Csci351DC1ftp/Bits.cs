@@ -188,11 +188,17 @@ namespace Csci351DC1ftp
         /// <returns>The inverted byte.</returns>
         public static byte InvertBits(byte b)
         {
-            // Shamelessly ~stolen~ (sourced) from here: http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
+            // Shamelessly ~stolen~ (sourced) from here:
+            // http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
             ulong u = ((b * 0x0202020202UL) & 0x010884422010UL) % 1023;
             return (byte)u;
         }
 
+        /// <summary>
+        /// Check if a 32-bit sequence has an even number of 1's.
+        /// </summary>
+        /// <param name="binSeq">The sequence to check, represented as a UInt32.</param>
+        /// <returns>True if the sequence has an even # of 1's, otherwise false.</returns>
         public static bool HasEvenOnes(uint binSeq)
         {
             int ones = 0;
@@ -205,6 +211,21 @@ namespace Csci351DC1ftp
             }
 
             return ones % 2 == 0;
+        }
+
+        /// <summary>
+        /// Flip the nth bit of a 32-bit sequence.
+        /// </summary>
+        /// <param name="binSeq">The 32-bit sequence to operate on.</param>
+        /// <param name="n">The index (0-31) of the bit to flip.</param>
+        /// <returns>The 32-bit sequence with the chosen bit flipped.</returns>
+        public static uint FlipNthBit(uint binSeq, byte n)
+        {
+            if (n > 31 || n < 0)
+                return binSeq;
+
+            uint mask = (uint)(0x01 << n);
+            return binSeq ^ mask;
         }
     }
 

@@ -113,6 +113,13 @@ namespace Csci351DC1ftp
             Console.WriteLine(Bits.HasEvenOnes(i));
         }
 
+        static void FlipNthBitTest()
+        {
+            uint i = 13422208;
+            Console.WriteLine(Bits.Int32ToBinStr(i));
+            Console.WriteLine(Bits.Int32ToBinStr(Bits.FlipNthBit(i, 5)));
+        }
+
         public static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)
@@ -138,7 +145,7 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
-            HasEvenOnesTest();
+            FlipNthBitTest();
 
             //HammingClient client = new HammingClient(reqType, hostName, fileName);
             //client.Retrieve();

@@ -192,6 +192,20 @@ namespace Csci351DC1ftp
             ulong u = ((b * 0x0202020202UL) & 0x010884422010UL) % 1023;
             return (byte)u;
         }
+
+        public static bool HasEvenOnes(uint binSeq)
+        {
+            int ones = 0;
+            uint mask = 0x1;
+
+            for (int i = 0; i < 32; ++i)
+            {
+                if ((binSeq >> i & mask) == 0x1)
+                    ones += 1;
+            }
+
+            return ones % 2 == 0;
+        }
     }
 
     /// <summary>

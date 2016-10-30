@@ -182,23 +182,11 @@ namespace Csci351DC1ftp
                 } while (!isLastPacket);
                 
             }
-
-            // not handling error correction as of yet
         }
 
         private byte[] UnhamData(byte[] data, bool lastPacket)
         {
             //mmm, ham...
-
-            // 1. Invert byte order so that the hamming bits can be properly extracted/read
-            // 2. Save extra trailing bits
-            // 3. Append the trailing bits from the previous step (if any) as LEADING bits
-            // 4. The trailing bits are now the trailing produced from the append, followed by the trailing from this step
-            // - Trailing from previous: 00
-            // - This step: 10101000 01011010 100110[01 00]
-            // - Prepend previous trailing: 00101010 00010110 10100110 [0100]
-            // 5. Invert ALL BITS so that they properly translate into the data
-            // 6. Read the next four bytes and repeat at 1. until data is consumed
 
             int numBlocks = data.Length / BLK_SIZE;
             byte[] block = new byte[BLK_SIZE];

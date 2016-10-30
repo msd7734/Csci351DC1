@@ -201,6 +201,9 @@ namespace Csci351DC1ftp
         /// <returns>True if the sequence has an even # of 1's, otherwise false.</returns>
         public static bool HasEvenOnes(uint binSeq)
         {
+            if (binSeq == 0)
+                return true;
+
             int ones = 0;
             uint mask = 0x1;
 
@@ -227,6 +230,8 @@ namespace Csci351DC1ftp
             uint mask = (uint)(0x01 << n);
             return binSeq ^ mask;
         }
+
+        
     }
 
     /// <summary>

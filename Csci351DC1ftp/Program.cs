@@ -102,8 +102,6 @@ namespace Csci351DC1ftp
             TwoBit b2 = new TwoBit(1, 0);
             byte res = Bits.TwoBitsToByte(new TwoBit[] { b2, b0 });
             Console.WriteLine(res);
-            
-            
         }
 
         static void HasEvenOnesTest()
@@ -118,6 +116,26 @@ namespace Csci351DC1ftp
             uint i = 13422208;
             Console.WriteLine(Bits.Int32ToBinStr(i));
             Console.WriteLine(Bits.Int32ToBinStr(Bits.FlipNthBit(i, 5)));
+        }
+
+        static void HammingCodeTest()
+        {
+            // 0b00010100011010000010011101
+            // uint i = 5349533;
+            // 0b10010100011010000010011101
+            uint i = 38903965;
+            HammingCodePrint(Hamming32Bit.HammingCode1, i);
+            HammingCodePrint(Hamming32Bit.HammingCode2, i);
+            HammingCodePrint(Hamming32Bit.HammingCode4, i);
+            HammingCodePrint(Hamming32Bit.HammingCode8, i);
+            HammingCodePrint(Hamming32Bit.HammingCode16, i);
+            HammingCodePrint(Hamming32Bit.HammingCode32, i);
+        }
+
+        static void HammingCodePrint(Func<uint, uint> codeFunc, uint val)
+        {
+            uint hamming = codeFunc(val);
+            Console.WriteLine(Bits.Int32ToBinStr(hamming));
         }
 
         public static void PrintByteArr(byte[] bytes)
@@ -145,7 +163,7 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
-            FlipNthBitTest();
+            HammingCodeTest();
 
             //HammingClient client = new HammingClient(reqType, hostName, fileName);
             //client.Retrieve();

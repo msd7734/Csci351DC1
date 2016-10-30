@@ -296,6 +296,25 @@ namespace Csci351DC1ftp
             return unhammed.ToArray();
         }
 
+        private uint CalcHammingCode(uint binSeq, byte hammingBit)
+        {
+            byte step = (byte)(hammingBit + 1);
+            uint res = 0;
+            for (int i = 0; i * step < 32; ++i)
+            {
+
+            }
+
+            return binSeq;
+        }
+
+        private uint FixError(uint binSeq, byte hammingBit)
+        {
+
+
+            return binSeq;
+        }
+
         private byte[] TruncateBlock(byte[] b)
         {
             // starting index of null bytes

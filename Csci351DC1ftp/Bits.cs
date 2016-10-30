@@ -163,6 +163,18 @@ namespace Csci351DC1ftp
 
             return twoBits.ToArray();
         }
+
+        /// <summary>
+        /// Invert the bit order of a byte.
+        /// </summary>
+        /// <param name="b">The byte to invert.</param>
+        /// <returns>The inverted byte.</returns>
+        public static byte InvertBits(byte b)
+        {
+            // Shamelessly ~stolen~ (sourced) from here: http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
+            ulong u = ((b * 0x0202020202UL) & 0x010884422010UL) % 1023;
+            return (byte)u;
+        }
     }
 
     /// <summary>

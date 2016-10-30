@@ -218,15 +218,22 @@ namespace Csci351DC1ftp
                 Array.Reverse(block);
                 uint bits = BitConverter.ToUInt32(block, 0);
                 bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
-                block = BitConverter.GetBytes(bits);
-
-                // the fourth byte will at this point contain only the trailing two "leftover" bits
-                byte trailing = block[3];
 
                 // make room to prepend previous leftover bits
                 bits = bits >> (2 * extraBits.Count);
 
+                // convert the previous leftover bits to a byte
+                byte extraByte = Bits.TwoBitsToByte(extraBits.ToArray());
+
+                // move the bits to the head of a 32-bit mask
+                uint prependMask =  (uint)(extraByte << (31 - (2 * extraBits.Count)));
+
+                // XOR the shifted, unhammed bits with the mask
+                bits = bits ^ prependMask;
+
+                block = BitConverter.GetBytes(bits);
                 
+
 
                 // store the trailing bits
                 extraBits.Add(new TwoBit(block[3]));

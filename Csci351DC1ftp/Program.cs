@@ -84,6 +84,13 @@ namespace Csci351DC1ftp
             Console.WriteLine(Bits.ByteToTwoBits(b).Length);
         }
 
+        static void InvertBitsTest()
+        {
+            byte b = 0xC4;
+            Console.WriteLine(Bits.ByteToBinStr(b));
+            Console.WriteLine(Bits.ByteToBinStr(Bits.InvertBits(b)));
+        }
+
         public static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)
@@ -109,7 +116,7 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
-            ByteToTwoBitsTest();
+            InvertBitsTest();
 
             //HammingClient client = new HammingClient(reqType, hostName, fileName);
             //client.Retrieve();

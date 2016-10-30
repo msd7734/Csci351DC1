@@ -168,7 +168,7 @@ namespace Csci351DC1ftp
             //HammingClient client = new HammingClient(reqType, hostName, fileName);
             //client.Retrieve();
             
-
+            
             // wait to end
             Console.ReadKey(true);
         }

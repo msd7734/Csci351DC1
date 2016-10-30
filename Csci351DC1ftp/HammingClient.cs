@@ -210,9 +210,21 @@ namespace Csci351DC1ftp
                 if (!BitConverter.IsLittleEndian)
                     Array.Reverse(block);
 
+                // remove hamming bits
                 uint bits = BitConverter.ToUInt32(block, 0);
+                uint snipped = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
 
-                bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
+                // for every hamming codeword n that is not even when 
+                //  checked against its parity bit, add 2^n to error bit index.
+                //  flip error bit index, and check again. If good, then continue.
+                //  if still has error, send NACK.
+
+                uint hcode1 = Hamming32Bit.HammingCode1(snipped);
+                uint hcode2 = Hamming32Bit.HammingCode2(snipped);
+                uint hcode4 = Hamming32Bit.HammingCode4(snipped);
+                uint hcode8 = Hamming32Bit.HammingCode8(snipped);
+                uint hcode16 = Hamming32Bit.HammingCode16(snipped);
+                uint hcode32 = Hamming32Bit.HammingCode32(snipped);
 
                 // make room to prepend previous leftover bits
                 bits = bits << (HAMMING_BIT_INDECES.Length - (2 * extraBits.Count));
@@ -222,11 +234,11 @@ namespace Csci351DC1ftp
                 extraByte = (byte)(Bits.InvertBits(extraByte) >> (8 - (2 * extraBits.Count)));
 
                 // move the bits to the head of a 32-bit mask
-                uint prependMask =  (uint)(extraByte << (32 - (2 * extraBits.Count)));
+                uint prependMask = (uint)(extraByte << (32 - (2 * extraBits.Count)));
 
                 // XOR the shifted, unhammed bits with the mask
                 bits = bits ^ prependMask;
-                
+
                 block = BitConverter.GetBytes(bits);
 
                 block[0] = Bits.InvertBits(block[0]);
@@ -286,7 +298,7 @@ namespace Csci351DC1ftp
 
                         unhammed.Add(block[1]);
                         unhammed.Add(block[2]);
-                        unhammed.Add(block[3]); 
+                        unhammed.Add(block[3]);
                     }
                 }
 
@@ -294,18 +306,6 @@ namespace Csci351DC1ftp
             }
 
             return unhammed.ToArray();
-        }
-
-        private uint CalcHammingCode(uint binSeq, byte hammingBit)
-        {
-            byte step = (byte)(hammingBit + 1);
-            uint res = 0;
-            for (int i = 0; i * step < 32; ++i)
-            {
-
-            }
-
-            return binSeq;
         }
 
         private uint FixError(uint binSeq, byte hammingBit)

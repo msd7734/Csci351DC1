@@ -156,8 +156,6 @@ namespace Csci351DC1ftp
 
                     trueData = UnhamData(mostRecentData.GetTruncatedData());
 
-                    Console.WriteLine(mostRecentData.GetBytes().Length);
-
                     // file.Write(trueData, 0, trueData.Length);
                     resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
 
@@ -223,7 +221,7 @@ namespace Csci351DC1ftp
                 {
                     data[i] = resp[i + 4];
                 }
-                    return new DataPacket(blockNum, data);
+                return new DataPacket(blockNum, data);
             }
             else if ((Opcode)respCode == Opcode.ERROR)
             {

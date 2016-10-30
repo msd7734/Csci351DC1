@@ -72,7 +72,9 @@ namespace Csci351DC1ftp
                 }
             }
 
-            return Data.Take(nullStartIndex).ToArray();
+            return (nullStartIndex >= 0) ?
+                Data.Take(nullStartIndex).ToArray() :
+                Data;
         }
 
         public override byte[] GetBytes()

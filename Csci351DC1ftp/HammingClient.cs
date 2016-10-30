@@ -188,10 +188,23 @@ namespace Csci351DC1ftp
             // - Trailing from previous: 00
             // - This step: 10101000 01011010 100110[01 00]
             // - Prepend previous trailing: 00101010 00010110 10100110 [0100]
-            // 5. Invert full bytes back so they're in the order that properly translates to the data
+            // 5. Invert ALL BITS so that they properly translate into the data
             // 6. Read the next four bytes and repeat at 1. until data is consumed
 
-            Console.WriteLine(data.Length % 4);
+            int numBlocks = data.Length / BLK_SIZE;
+            byte[] block = new byte[BLK_SIZE];
+            
+            for (int i = 0; i < numBlocks; i += BLK_SIZE)
+            {
+                Array.Copy(data, i, block, 0, BLK_SIZE);
+                Array.Reverse(block);
+                uint bits = BitConverter.ToUInt32(block, 0);
+                bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
+                block = BitConverter.GetBytes(bits);
+
+
+                Array.Clear(block, 0, block.Length);
+            }
 
             return data;
         }

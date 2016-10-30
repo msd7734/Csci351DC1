@@ -48,6 +48,7 @@
     <Compile Include="RequestCorruptedPacket.cs" />
     <Compile Include="RequestPacket.cs" />
     <Compile Include="TFTPPacket.cs" />
+    <Compile Include="TwoBit.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

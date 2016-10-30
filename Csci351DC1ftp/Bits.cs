@@ -121,6 +121,14 @@ namespace Csci351DC1ftp
         {
             return Convert.ToString(i, 2).PadLeft(32, '0');
         }
+
+        public static byte TwoBitsToByte(TwoBit[] bits)
+        {
+            if (bits.Length != 4)
+                throw new ArgumentOutOfRangeException();
+
+            return (byte)(bits[0].AsByte() + (bits[1].AsByte() * 4) + (bits[2].AsByte() * 16) + (bits[3].AsByte() * 64));
+        }
     }
 
     /// <summary>

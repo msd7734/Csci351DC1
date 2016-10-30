@@ -64,6 +64,16 @@ namespace Csci351DC1ftp
             PrintByteArr(p.GetTruncatedData());
         }
 
+        static void TwoBitTest()
+        {
+            // Represents 0b01110010 (114)
+            TwoBit b0 = new TwoBit(1, 0);
+            TwoBit b1 = new TwoBit(0, 0);
+            TwoBit b2 = new TwoBit(1, 1);
+            TwoBit b3 = new TwoBit(0, 1);
+            Console.WriteLine(Bits.TwoBitsToByte(new TwoBit[] { b0, b1, b2, b3 }));
+        }
+
         public static void PrintByteArr(byte[] bytes)
         {
             foreach (byte b in bytes)
@@ -89,8 +99,8 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
-            HammingClient client = new HammingClient(reqType, hostName, fileName);
-            client.Retrieve();
+            //HammingClient client = new HammingClient(reqType, hostName, fileName);
+            //client.Retrieve();
             
 
             // wait to end

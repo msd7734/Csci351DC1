@@ -226,7 +226,7 @@ namespace Csci351DC1ftp
                 // make room to prepend previous leftover bits
                 bits = bits >> (2 * extraBits.Count);
 
-
+                
 
                 // store the trailing bits
                 extraBits.Add(new TwoBit(block[3]));

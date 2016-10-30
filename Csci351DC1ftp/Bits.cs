@@ -123,16 +123,22 @@ namespace Csci351DC1ftp
         }
 
         /// <summary>
-        /// Convert an array of 4 bit pairs to a byte.
+        /// Convert an array of up to 4 bit pairs to a byte.
         /// </summary>
         /// <param name="bits">A TwoBit array whose lower indeces indicate lower order bit pairs.</param>
         /// <returns>A byte with the value of the concatenated bit pairs.</returns>
         public static byte TwoBitsToByte(TwoBit[] bits)
         {
-            if (bits.Length != 4)
+            if (bits.Length > 4)
                 throw new ArgumentOutOfRangeException();
 
-            return (byte)(bits[0].AsByte() + (bits[1].AsByte() * 4) + (bits[2].AsByte() * 16) + (bits[3].AsByte() * 64));
+            byte res = 0;
+            for (int i = 0; i < bits.Length; ++i)
+            {
+                res = (byte)(bits[i].AsByte() * Math.Pow(2, i*2.0));
+            }
+
+            return res;
         }
 
 

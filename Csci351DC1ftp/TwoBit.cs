@@ -39,6 +39,13 @@ namespace Csci351DC1ftp
             BitTwo = Bits.NthBit(b, 1);
         }
 
+        public void Invert()
+        {
+            byte temp = BitOne;
+            BitOne = BitTwo;
+            BitTwo = temp;
+        }
+
         public byte AsByte()
         {
             return (byte)(BitOne + (2 * BitTwo));

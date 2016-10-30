@@ -135,7 +135,7 @@ namespace Csci351DC1ftp
             byte res = 0;
             for (int i = 0; i < bits.Length; ++i)
             {
-                res = (byte)(bits[i].AsByte() * Math.Pow(2, i*2.0));
+                res += (byte)(bits[i].AsByte() * Math.Pow(2, i*2.0));
             }
 
             return res;
@@ -161,6 +161,23 @@ namespace Csci351DC1ftp
                 b = (byte)(b >> 2);
             }
 
+            return twoBits.ToArray();
+        }
+
+        /// <summary>
+        /// Make a specified number of bit pairs from a given byte.
+        /// </summary>
+        /// <param name="b">The byte to split into bit pairs.</param>
+        /// <param name="count">How many bit pairs to make.</param>
+        /// <returns>A TwoBit array of size 0-4 (size 0 if b = 0).</returns>
+        public static TwoBit[] ByteToTwoBits(byte b, int count)
+        {
+            var twoBits = new List<TwoBit>(4);
+            for (int i = 0; i < count; ++i)
+            {
+                twoBits.Add(new TwoBit(b));
+                b = (byte)(b >> 2);
+            }
             return twoBits.ToArray();
         }
 

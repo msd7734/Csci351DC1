@@ -159,19 +159,13 @@ namespace Csci351DC1ftp
             using (FileStream file = new FileStream(this._fileName, FileMode.Create))
             {
                 byte[] trueData;
+                bool isLastPacket = false;
                 do
                 {
-                    // There's potentially a really annoying edge case here where there are trailing null bytes
-                    // but the next packet has valid data. So null-byte padding that just happens to fall on a packet boundary:
-                    //      [..., 0x0, 0x0, 0x0, 0x0] | [0xF0, 0xD3, 0x18, ...]
-                    // The way to fix this might be to write two packets at a time?
-                    // But if you're saving one and checking on the next one, it's possible there will be no next packet (timeout).
-                    // Either need to add filesize or total expected incoming blocks to the protocol, or just assume this edge case won't happen.
-                    // Since we can't change the protocol, assume it won't happen.
-
-                    trueData = UnhamData(mostRecentData.GetTruncatedData());
-
+                    isLastPacket = mostRecentData.Data.Length != MAX_DATA_SIZE;
+                    trueData = UnhamData(mostRecentData.Data, isLastPacket);
                     file.Write(trueData, 0, trueData.Length);
+                    Console.WriteLine("Wrote block {0} ({1} bytes)", mostRecentData.BlockNum, trueData.Length);
                     resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
 
                     if (resp.Opcode == Opcode.DATA)
@@ -185,14 +179,14 @@ namespace Csci351DC1ftp
                         return;
                     }
 
-                } while (trueData.Length == MAX_EXTRACT_DATA_SIZE);
+                } while (!isLastPacket);
                 
             }
 
             // not handling error correction as of yet
         }
 
-        private byte[] UnhamData(byte[] data)
+        private byte[] UnhamData(byte[] data, bool lastPacket)
         {
             //mmm, ham...
 
@@ -214,7 +208,7 @@ namespace Csci351DC1ftp
             bool lastBlock = false;
             for (int i = 0; i < data.Length; i += BLK_SIZE)
             {
-                lastBlock = ((i + BLK_SIZE) / BLK_SIZE >= numBlocks);
+                lastBlock = ((i + BLK_SIZE) / BLK_SIZE >= numBlocks) && lastPacket;
 
                 if (i + BLK_SIZE > data.Length)
                 {
@@ -225,64 +219,40 @@ namespace Csci351DC1ftp
                     Array.Copy(data, i, block, 0, BLK_SIZE);
                 }
 
-                Console.Write("Bytes in network byte order: ");
-                Program.PrintByteArr(block);
-
                 if (!BitConverter.IsLittleEndian)
                     Array.Reverse(block);
 
                 uint bits = BitConverter.ToUInt32(block, 0);
 
-                Console.WriteLine("With hamming bit 1 on the right: {0}", Bits.Int32ToBinStr(bits));
-
                 bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
-
-                Console.WriteLine("Hamming bits removed: {0}", Bits.Int32ToBinStr(bits));
 
                 // make room to prepend previous leftover bits
                 bits = bits << (HAMMING_BIT_INDECES.Length - (2 * extraBits.Count));
-
-                Console.WriteLine("Shift left to prepend any leftover bits: {0}", Bits.Int32ToBinStr(bits));
 
                 // convert the previous leftover bits to a byte
                 byte extraByte = Bits.TwoBitsToByte(extraBits.ToArray());
                 extraByte = (byte)(Bits.InvertBits(extraByte) >> (8 - (2 * extraBits.Count)));
 
-                Console.WriteLine("The leftover bits: {0}", Bits.ByteToBinStr(extraByte));
-
                 // move the bits to the head of a 32-bit mask
                 uint prependMask =  (uint)(extraByte << (32 - (2 * extraBits.Count)));
 
-                Console.WriteLine("The mask to be XOR'd: {0}", Bits.Int32ToBinStr(prependMask));
-
                 // XOR the shifted, unhammed bits with the mask
                 bits = bits ^ prependMask;
-
-                Console.WriteLine("Leftover bits prepended: {0}", Bits.Int32ToBinStr(bits));
                 
                 block = BitConverter.GetBytes(bits);
-
-                Console.Write("Hamming order bytes before bit reverse: ");
-                Program.PrintByteArr(block);
 
                 block[0] = Bits.InvertBits(block[0]);
                 block[1] = Bits.InvertBits(block[1]);
                 block[2] = Bits.InvertBits(block[2]);
                 block[3] = Bits.InvertBits(block[3]);
 
-                Console.Write("Hamming order bytes after bit reverse: ");
-                Program.PrintByteArr(block);
-
                 byte trailingByte = (BitConverter.IsLittleEndian) ? block[0] : block[3];
 
 
                 // store the new trailing bits (if previously 1 trailing pair, take 2 this time, and so on)
                 TwoBit[] newTrailing = Bits.ByteToTwoBits(trailingByte, extraBits.Count + 1);
-                Console.WriteLine("We will store {0} pairs of leftover bits.", newTrailing.Length);
                 extraBits.Clear();
                 extraBits.AddRange(newTrailing);
-
-                Console.WriteLine("Storing leftover: ", Bits.ByteToBinStr(Bits.TwoBitsToByte(newTrailing)));
 
                 if (BitConverter.IsLittleEndian)
                 {
@@ -296,22 +266,17 @@ namespace Csci351DC1ftp
                     else
                     {
                         unhammed.Add(block[3]);
-                        Console.WriteLine("Write: {0} ({1})", (char)block[3], block[3]);
                         unhammed.Add(block[2]);
-                        Console.WriteLine("Write: {0} ({1})", (char)block[2], block[2]);
                         unhammed.Add(block[1]);
-                        Console.WriteLine("Write: {0} ({1})", (char)block[1], block[1]);
 
                         // if we can make a full byte from the trailing bits, we can write it
                         if (extraBits.Count == 4)
                         {
                             byte leftover = Bits.TwoBitsToByte(extraBits.ToArray());
-                            Console.WriteLine("Write: {0} ({1})", (char)leftover, leftover);
                             unhammed.Add(leftover);
                             extraBits.Clear();
                         }
                     }
-                    
                 }
                 else
                 {
@@ -327,7 +292,6 @@ namespace Csci351DC1ftp
                         if (extraBits.Count == 4)
                         {
                             byte leftover = Bits.TwoBitsToByte(extraBits.ToArray());
-                            Console.WriteLine("Write: {0} ({1})", (char)leftover, leftover);
                             unhammed.Add(leftover);
                             extraBits.Clear();
                         }
@@ -339,8 +303,6 @@ namespace Csci351DC1ftp
                 }
 
                 Array.Clear(block, 0, block.Length);
-
-                Console.WriteLine("-------");
             }
 
             return unhammed.ToArray();
@@ -396,7 +358,8 @@ namespace Csci351DC1ftp
             if ((Opcode)respCode == Opcode.DATA)
             {
                 short blockNum = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 2));
-                byte[] data = new byte[MAX_DATA_SIZE];
+                byte[] data = new byte[resp.Length - 4];
+                Console.WriteLine("Got incoming data packet. Size: {0}", resp.Length - 4);
                 Array.Copy(resp, 4, data, 0, resp.Length - 4);
                 return new DataPacket(blockNum, data);
             }

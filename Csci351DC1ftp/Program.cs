@@ -181,10 +181,6 @@ namespace Csci351DC1ftp
                     Console.WriteLine("The client will now close.");
                 }
             }
-            
-            
-            // wait to end
-            Console.ReadKey(true);
         }
     }
 }

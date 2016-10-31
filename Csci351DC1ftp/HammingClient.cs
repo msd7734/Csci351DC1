@@ -171,13 +171,11 @@ namespace Csci351DC1ftp
 
                     if (trueData.Length == 1 && trueData[0] == ERR_BYTE)
                     {
-                        Console.WriteLine("2-bit Error in block {0}. Sending NACK.", mostRecentData.BlockNum);
                         resp = ReceiveDatagram(new NackPacket(mostRecentData.BlockNum));
                     }
                     else
                     {
                         file.Write(trueData, 0, trueData.Length);
-                        Console.WriteLine("Wrote block {0} ({1} bytes)", mostRecentData.BlockNum, trueData.Length);
                         resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
                     }
 
@@ -427,7 +425,6 @@ namespace Csci351DC1ftp
             {
                 short blockNum = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 2));
                 byte[] data = new byte[resp.Length - 4];
-                Console.WriteLine("Got incoming data packet. Size: {0}", resp.Length - 4);
                 Array.Copy(resp, 4, data, 0, resp.Length - 4);
                 return new DataPacket(blockNum, data);
             }

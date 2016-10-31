@@ -170,7 +170,10 @@ namespace Csci351DC1ftp
             {
                 try
                 {
-                    client.RetrieveAndWrite();
+                    if (client.Connected)
+                    {
+                        client.RetrieveAndWrite();
+                    }
                 }
                 catch (Exception e)
                 {

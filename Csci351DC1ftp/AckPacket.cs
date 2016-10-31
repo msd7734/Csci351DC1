@@ -7,6 +7,9 @@ using System.Net;
 
 namespace Csci351DC1ftp
 {
+    /// <summary>
+    /// An outgoing packet to acknowledge correct data received.
+    /// </summary>
     public class AckPacket : TFTPPacket
     {
         public short BlockNum { get; private set; }

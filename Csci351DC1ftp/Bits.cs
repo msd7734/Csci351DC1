@@ -25,6 +25,12 @@ namespace Csci351DC1ftp
             return Convert.ToByte(((b >> nbit) & 0x01));
         }
 
+        /// <summary>
+        /// Get the nth bit of a uint.
+        /// </summary>
+        /// <param name="i32">The uint to operate on.</param>
+        /// <param name="nbit">The index of the bit to return, where index 0 is the rightmost bit and 7 is the leftmost.</param>
+        /// <returns>A byte of value 0 or 1.</returns>
         public static UInt32 NthBit(UInt32 i32, byte nbit)
         {
             if (nbit > 31 || nbit < 0)
@@ -117,6 +123,11 @@ namespace Csci351DC1ftp
             return Convert.ToString(b, 2).PadLeft(8, '0');
         }
 
+        /// <summary>
+        /// Convert a uint to a fixed-length binary string representation (used for testing).
+        /// </summary>
+        /// <param name="b">The uint to convert.</param>
+        /// <returns>A binary string representation of i.</returns>
         public static String Int32ToBinStr(UInt32 i)
         {
             return Convert.ToString(i, 2).PadLeft(32, '0');

@@ -7,11 +7,17 @@ using System.Net;
 
 namespace Csci351DC1ftp
 {
+    /// <summary>
+    /// An outgoing packet to request a file from the server with intentional bit errors.
+    /// </summary>
     public class RequestCorruptedPacket : TFTPPacket
     {
         // Only need to worry about one Transfer Mode apparently
         private static byte[] TRANSFER_MODE_BYTES = Encoding.ASCII.GetBytes("octet");
 
+        /// <summary>
+        /// The file to request.
+        /// </summary>
         public string FileName { get; private set; }
 
         public RequestCorruptedPacket(string fileName)

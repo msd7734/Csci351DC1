@@ -11,8 +11,14 @@ namespace Csci351DC1ftp
     /// </summary>
     public class TwoBit
     {
+        /// <summary>
+        /// The low order bit.
+        /// </summary>
         public byte BitOne { get; private set; }
 
+        /// <summary>
+        /// The high order bit.
+        /// </summary>
         public byte BitTwo { get; private set; }
 
         /// <summary>
@@ -39,13 +45,10 @@ namespace Csci351DC1ftp
             BitTwo = Bits.NthBit(b, 1);
         }
 
-        public void Invert()
-        {
-            byte temp = BitOne;
-            BitOne = BitTwo;
-            BitTwo = temp;
-        }
-
+        /// <summary>
+        /// Get this TwoBit representation as a byte.
+        /// </summary>
+        /// <returns>The byte value (0-3).</returns>
         public byte AsByte()
         {
             return (byte)(BitOne + (2 * BitTwo));

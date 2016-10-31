@@ -18,6 +18,9 @@ namespace Csci351DC1ftp
         Error
     }
 
+    /// <summary>
+    /// A client for connecting to and retrieving data from a hamming server (as defined by the project guidelines).
+    /// </summary>
     public class HammingClient : IDisposable
     {
         // Server always listens on port 7000
@@ -121,6 +124,9 @@ namespace Csci351DC1ftp
             }
         }
 
+        /// <summary>
+        /// Retrieve the client's target file and write it to the local directory.
+        /// </summary>
         public void RetrieveAndWrite()
         {
             if (!Connected)
@@ -154,6 +160,10 @@ namespace Csci351DC1ftp
             }
         }
 
+        /// <summary>
+        /// Handle the data request loop.
+        /// </summary>
+        /// <param name="firstPacket">The initial data packet received when first requesting the file.</param>
         private void HandleData(DataPacket firstPacket)
         {
             DataPacket mostRecentData = firstPacket;
@@ -204,6 +214,12 @@ namespace Csci351DC1ftp
             File.Delete(tempFile);
         }
 
+        /// <summary>
+        /// Return the true (without parity bits), error corrected bytes in local system order.
+        /// </summary>
+        /// <param name="data">The data bytes in network order.</param>
+        /// <param name="lastPacket">Whether this data should be treated as the last in the file.</param>
+        /// <returns>The data to write, or a 1 byte buffer containing ERR_BYTE if the packet contained an uncorrectable error.</returns>
         private byte[] UnhamData(byte[] data, bool lastPacket)
         {
             //mmm, ham...
@@ -333,6 +349,13 @@ namespace Csci351DC1ftp
             return unhammed.ToArray();
         }
 
+        /// <summary>
+        /// Check for and correct a 1-bit error in a 32-bit binary sequence.
+        /// </summary>
+        /// <param name="binSeq">An 32-bit int holding the bits to check.
+        /// Low order hamming bits are low order bits in the integer, and vice versa for high order.
+        /// </param>
+        /// <returns>The same binary sequence as was passed in if no errors, or with a 1-bit correction.</returns>
         private uint CheckBitErrors(uint binSeq)
         {
             sbyte bitToCorrect = 0;
@@ -374,6 +397,11 @@ namespace Csci351DC1ftp
             return binSeq;
         }
 
+        /// <summary>
+        /// Remove null bytes from the end of a byte buffer. Does not affect middle bytes.
+        /// </summary>
+        /// <param name="b">The byte buffer to truncate.</param>
+        /// <returns>A buffer containing the bytes passed in b, in order, with trailing null bytes removed.</returns>
         private byte[] TruncateBlock(byte[] b)
         {
             // starting index of null bytes
@@ -404,6 +432,11 @@ namespace Csci351DC1ftp
             return res;
         }
 
+        /// <summary>
+        /// Given an outgoing packet, return the server's response.
+        /// </summary>
+        /// <param name="toSend">The packet to send to the server.</param>
+        /// <returns>The server's response to the given packet.</returns>
         private TFTPPacket ReceiveDatagram(TFTPPacket toSend)
         {
             byte[] bytes = toSend.GetBytes();

@@ -7,10 +7,19 @@ using System.Net;
 
 namespace Csci351DC1ftp
 {
+    /// <summary>
+    /// An incoming packet that indicates a server error state.
+    /// </summary>
     public class ErrorPacket : TFTPPacket
     {
+        /// <summary>
+        /// The number of the error.
+        /// </summary>
         public short ErrorNum { get; private set; }
 
+        /// <summary>
+        /// The message contained in the error.
+        /// </summary>
         public string ErrorMsg { get; private set; }
 
         public ErrorPacket(short errNum, string errMsg)

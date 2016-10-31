@@ -40,7 +40,6 @@
   <ItemGroup>
     <Compile Include="AckPacket.cs" />
     <Compile Include="Bits.cs" />
-    <Compile Include="Codeword.cs" />
     <Compile Include="DataPacket.cs" />
     <Compile Include="ErrorPacket.cs" />
     <Compile Include="Hamming32Bit.cs" />

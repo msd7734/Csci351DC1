@@ -16,6 +16,9 @@ namespace Csci351DC1ftp
         NACK = 6
     }
 
+    /// <summary>
+    /// Define the basics of a packet for the Hamming Server.
+    /// </summary>
     public abstract class TFTPPacket
     {
         /// <summary>
@@ -29,7 +32,7 @@ namespace Csci351DC1ftp
         }
 
         /// <summary>
-        /// Get the raw byte representation of this packet.
+        /// Get the raw byte representation of this packet as it would be sent across the network.
         /// </summary>
         /// <returns>An array of bytes.</returns>
         public abstract byte[] GetBytes();

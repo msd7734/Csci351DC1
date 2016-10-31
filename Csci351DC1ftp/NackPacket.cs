@@ -7,6 +7,9 @@ using System.Net;
 
 namespace Csci351DC1ftp
 {
+    /// <summary>
+    /// And outgoing packet to signal there was an uncorrectable error in the last data packet.
+    /// </summary>
     public class NackPacket : TFTPPacket
     {
         public short BlockNum { get; private set; }

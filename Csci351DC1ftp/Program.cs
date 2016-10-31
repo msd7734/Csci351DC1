@@ -32,6 +32,7 @@ namespace Csci351DC1ftp
                 {
                     if (client.Connected)
                     {
+                        // Transfer and write the given file from the server
                         client.RetrieveAndWrite();
                     }
                 }

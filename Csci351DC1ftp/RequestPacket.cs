@@ -7,6 +7,9 @@ using System.Net;
 
 namespace Csci351DC1ftp
 {
+    /// <summary>
+    /// And outgoing packet to request a file.
+    /// </summary>
     public class RequestPacket : TFTPPacket
     {
         // Only need to worry about one Transfer Mode apparently

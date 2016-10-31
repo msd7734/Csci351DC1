@@ -7,6 +7,9 @@ using System.Net;
 
 namespace Csci351DC1ftp
 {
+    /// <summary>
+    /// An incoming packet containing file data.
+    /// </summary>
     public class DataPacket : TFTPPacket
     {
         // Data packets contain a max of 512 bytes of data
@@ -18,6 +21,9 @@ namespace Csci351DC1ftp
 
         public short BlockNum { get; private set; }
 
+        /// <summary>
+        /// The up to 512 byte data sector of this data packet.
+        /// </summary>
         public byte[] Data { get; private set; }
 
         public DataPacket(short blockNum, byte[] data)
@@ -25,56 +31,6 @@ namespace Csci351DC1ftp
         {
             BlockNum = blockNum;
             Data = data.Take(BUF_SIZE).ToArray();
-        }
-
-        // Maybe pull this somewhere else, the packet data holder probably shouldn't
-        //  be responsible for handling hamming stuff (data agnosticism)
-        public byte[] GetUnhammedData()
-        {
-            // mmm, ham...
-
-            byte[] encBlock = new byte[BLK_SIZE];
-
-            for (int i = 0; i < BUF_SIZE / 4; ++i)
-            {
-                // network bytes come in lil' Endian, but Hamming is done in big, so reverse
-                encBlock = Data.Take(BLK_SIZE).Reverse().ToArray();
-
-                foreach (byte hbit in HAMMING_BIT_INDX)
-                {
-                    
-                }
-
-                
-            }
-            // Not implementing this here. GetTruncatedData() is all this class will do operate on its own data
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Get the data from the packet with trailing null bytes truncated.
-        /// </summary>
-        /// <returns>The truncated data as a byte array.</returns>
-        public byte[] GetTruncatedData()
-        {
-            // starting index of null bytes
-            int nullStartIndex = -1;
-
-            for (int i = 0; i < Data.Length; ++i)
-            {
-                if (Data[i] == 0x0 && nullStartIndex == -1)
-                {
-                    nullStartIndex = i;
-                }
-                else if (Data[i] != 0x0)
-                {
-                    nullStartIndex = -1;
-                }
-            }
-
-            return (nullStartIndex >= 0) ?
-                Data.Take(nullStartIndex).ToArray() :
-                Data;
         }
 
         public override byte[] GetBytes()

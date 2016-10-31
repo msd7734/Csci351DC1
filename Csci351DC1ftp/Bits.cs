@@ -224,8 +224,11 @@ namespace Csci351DC1ftp
         /// <returns>The 32-bit sequence with the chosen bit flipped.</returns>
         public static uint FlipNthBit(uint binSeq, byte n)
         {
+            // This is high-density usage code, make it a bit faster
+            /*
             if (n > 31 || n < 0)
                 return binSeq;
+            */
 
             uint mask = (uint)(0x01 << n);
             return binSeq ^ mask;

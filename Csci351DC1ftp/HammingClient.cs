@@ -38,6 +38,8 @@ namespace Csci351DC1ftp
         // Indeces of Hamming parity bits
         private static byte[] HAMMING_BIT_INDECES = { 0, 1, 3, 7, 15, 31 };
 
+        private static readonly byte ERR_BYTE = 0xFF;
+
         private static readonly Dictionary<string, string> SPECIAL_HOSTS =
             new Dictionary<string, string>()
             {
@@ -164,9 +166,17 @@ namespace Csci351DC1ftp
                 {
                     isLastPacket = mostRecentData.Data.Length != MAX_DATA_SIZE;
                     trueData = UnhamData(mostRecentData.Data, isLastPacket);
-                    file.Write(trueData, 0, trueData.Length);
-                    Console.WriteLine("Wrote block {0} ({1} bytes)", mostRecentData.BlockNum, trueData.Length);
-                    resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
+
+                    if (trueData.Length == 1 && trueData[0] == ERR_BYTE)
+                    {
+                        resp = ReceiveDatagram(new NackPacket(mostRecentData.BlockNum));
+                    }
+                    else
+                    {
+                        file.Write(trueData, 0, trueData.Length);
+                        Console.WriteLine("Wrote block {0} ({1} bytes)", mostRecentData.BlockNum, trueData.Length);
+                        resp = ReceiveDatagram(new AckPacket(mostRecentData.BlockNum));
+                    }
 
                     if (resp.Opcode == Opcode.DATA)
                     {
@@ -210,21 +220,26 @@ namespace Csci351DC1ftp
                 if (!BitConverter.IsLittleEndian)
                     Array.Reverse(block);
 
-                // remove hamming bits
+                // uint bits is the binary representation of the block
+                //  with high order bits to the left, low order to the right
                 uint bits = BitConverter.ToUInt32(block, 0);
-                uint snipped = Bits.SnipBits(bits, HAMMING_BIT_INDECES);
 
                 // for every hamming codeword n that is not even when 
                 //  checked against its parity bit, add 2^n to error bit index.
-                //  flip error bit index, and check again. If good, then continue.
-                //  if still has error, send NACK.
+                //  flip error bit index, and check the 32nd bit (overall parity)
+                //  if it's still not even parity, RUN FOR THE HILLS (or just send NACK)
 
-                uint hcode1 = Hamming32Bit.HammingCode1(snipped);
-                uint hcode2 = Hamming32Bit.HammingCode2(snipped);
-                uint hcode4 = Hamming32Bit.HammingCode4(snipped);
-                uint hcode8 = Hamming32Bit.HammingCode8(snipped);
-                uint hcode16 = Hamming32Bit.HammingCode16(snipped);
-                uint hcode32 = Hamming32Bit.HammingCode32(snipped);
+                // check and correct 1-bit errors
+                bits = CheckBitErrors(bits);
+                // bit 32 in uint bits is the parity bit, so check parity one last time
+                //  if it's still not even, return error byte
+                if (!Bits.HasEvenOnes(bits))
+                {
+                    return new byte[] { ERR_BYTE };
+                }
+
+                // remove hamming bits
+                bits = Bits.SnipBits(bits, HAMMING_BIT_INDECES); ;
 
                 // make room to prepend previous leftover bits
                 bits = bits << (HAMMING_BIT_INDECES.Length - (2 * extraBits.Count));
@@ -308,10 +323,49 @@ namespace Csci351DC1ftp
             return unhammed.ToArray();
         }
 
-        private uint FixError(uint binSeq, byte hammingBit)
+        private uint CheckBitErrors(uint binSeq)
         {
+            sbyte bitToCorrect = 0;
 
+            uint hcode1 = Hamming32Bit.HammingCode1(binSeq) << 1;
+            uint bit1 = Bits.NthBit(binSeq, 0);
+            if (!Bits.HasEvenOnes(hcode1 ^ bit1))
+                bitToCorrect += 1;
 
+            uint hcode2 = Hamming32Bit.HammingCode2(binSeq) << 1;
+            uint bit2 = Bits.NthBit(binSeq, 1);
+            if (!Bits.HasEvenOnes(hcode2 ^ bit2))
+                bitToCorrect += 2;
+
+            uint hcode4 = Hamming32Bit.HammingCode4(binSeq) << 1;
+            uint bit4 = Bits.NthBit(binSeq, 3);
+            if (!Bits.HasEvenOnes(hcode4 ^ bit4))
+                bitToCorrect += 4;
+
+            uint hcode8 = Hamming32Bit.HammingCode8(binSeq) << 1;
+            uint bit8 = Bits.NthBit(binSeq, 7);
+            if (!Bits.HasEvenOnes(hcode8 ^ bit8))
+                bitToCorrect += 8;
+
+            uint hcode16 = Hamming32Bit.HammingCode16(binSeq) << 1;
+            uint bit16 = Bits.NthBit(binSeq, 15);
+            if (!Bits.HasEvenOnes(hcode16 ^ bit16))
+                bitToCorrect += 16;
+
+            bitToCorrect -= 1;
+
+            // return the (ostensibly) corrected stream
+
+            if (bitToCorrect > -1)
+            {
+                uint corrected = Bits.FlipNthBit(binSeq, (byte)bitToCorrect);
+                Console.WriteLine("Error on bit {0}:", bitToCorrect);
+                Console.WriteLine("\tBefore: {0}", Bits.Int32ToBinStr(binSeq));
+                Console.WriteLine("\tAfter:  {0}", Bits.Int32ToBinStr(corrected));
+                return corrected;
+            }
+                
+            
             return binSeq;
         }
 

@@ -123,7 +123,10 @@ namespace Csci351DC1ftp
             // 0b00010100011010000010011101
             // uint i = 5349533;
             // 0b10010100011010000010011101
-            uint i = 38903965;
+            // uint i = 38903965;
+
+            // 0b11001001000000100011101101011010
+            uint i = 3372366682;
             HammingCodePrint(Hamming32Bit.HammingCode1, i);
             HammingCodePrint(Hamming32Bit.HammingCode2, i);
             HammingCodePrint(Hamming32Bit.HammingCode4, i);
@@ -162,8 +165,6 @@ namespace Csci351DC1ftp
             RequestType reqType = (RequestType) Enum.Parse(typeof(RequestType), args[0], ignoreCase:true);
             string hostName = args[1];
             string fileName = args[2];
-
-            HammingCodeTest();
 
             //HammingClient client = new HammingClient(reqType, hostName, fileName);
             //client.Retrieve();

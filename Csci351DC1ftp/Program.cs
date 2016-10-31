@@ -166,14 +166,11 @@ namespace Csci351DC1ftp
             string hostName = args[1];
             string fileName = args[2];
 
-            
-
             using (HammingClient client = new HammingClient(reqType, hostName, fileName))
             {
                 try
                 {
-                    client.Retrieve();
-                    
+                    client.RetrieveAndWrite();
                 }
                 catch (Exception e)
                 {

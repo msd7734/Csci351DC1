@@ -121,7 +121,7 @@ namespace Csci351DC1ftp
             }
         }
 
-        public void Retrieve()
+        public void RetrieveAndWrite()
         {
             if (!Connected)
             {
@@ -158,8 +158,9 @@ namespace Csci351DC1ftp
         {
             DataPacket mostRecentData = firstPacket;
             TFTPPacket resp;
+            string tempFile = this._fileName + ".tmp";
 
-            using (FileStream file = new FileStream(this._fileName, FileMode.Create))
+            using (FileStream file = new FileStream(tempFile, FileMode.Create))
             {
                 byte[] trueData;
                 bool isLastPacket = false;
@@ -192,8 +193,17 @@ namespace Csci351DC1ftp
                     }
 
                 } while (!isLastPacket);
-                
             }
+
+            using (FileStream tmp = new FileStream(tempFile, FileMode.Open))
+            {
+                using (FileStream dest = new FileStream(this._fileName, FileMode.Create))
+                {
+                    tmp.CopyTo(dest);
+                }
+            }
+
+            File.Delete(tempFile);
         }
 
         private byte[] UnhamData(byte[] data, bool lastPacket)
@@ -408,7 +418,7 @@ namespace Csci351DC1ftp
             }
             catch (SocketException se)
             {
-                throw new Exception("Failed to get a response from the server (likely due to a timeout).", se);
+                throw new Exception("Failed to get a response from the server.", se);
             }
 
             short respCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(resp, 0));

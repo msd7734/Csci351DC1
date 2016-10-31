@@ -49,7 +49,8 @@ namespace Csci351DC1ftp
 
         private static int MaxExtractedDataSize()
         {
-            // Making it portable for other block sizes!
+            // Yes, we know 32-bit hamming encoded blocks means 26 bits of data.
+            // But how to arrive at that number? Like this.
             int blockBits = BLK_SIZE * 8;
             int hammingBits = (int)Math.Log(blockBits, 2) + 1;
             double byteYieldPerDecode = (blockBits - hammingBits) / 8.0;
@@ -169,6 +170,7 @@ namespace Csci351DC1ftp
 
                     if (trueData.Length == 1 && trueData[0] == ERR_BYTE)
                     {
+                        Console.WriteLine("2-bit Error in block {0}. Sending NACK.", mostRecentData.BlockNum);
                         resp = ReceiveDatagram(new NackPacket(mostRecentData.BlockNum));
                     }
                     else
@@ -327,29 +329,28 @@ namespace Csci351DC1ftp
         {
             sbyte bitToCorrect = 0;
 
-            uint hcode1 = Hamming32Bit.HammingCode1(binSeq) << 1;
-            uint bit1 = Bits.NthBit(binSeq, 0);
-            if (!Bits.HasEvenOnes(hcode1 ^ bit1))
+            uint hcode1 = Hamming32Bit.HammingCode1(binSeq);
+            if (!Bits.HasEvenOnes(hcode1))
                 bitToCorrect += 1;
 
-            uint hcode2 = Hamming32Bit.HammingCode2(binSeq) << 1;
+            uint hcode2 = Hamming32Bit.HammingCode2(binSeq);
             uint bit2 = Bits.NthBit(binSeq, 1);
-            if (!Bits.HasEvenOnes(hcode2 ^ bit2))
+            if (!Bits.HasEvenOnes(hcode2))
                 bitToCorrect += 2;
 
-            uint hcode4 = Hamming32Bit.HammingCode4(binSeq) << 1;
+            uint hcode4 = Hamming32Bit.HammingCode4(binSeq);
             uint bit4 = Bits.NthBit(binSeq, 3);
-            if (!Bits.HasEvenOnes(hcode4 ^ bit4))
+            if (!Bits.HasEvenOnes(hcode4))
                 bitToCorrect += 4;
 
-            uint hcode8 = Hamming32Bit.HammingCode8(binSeq) << 1;
+            uint hcode8 = Hamming32Bit.HammingCode8(binSeq);
             uint bit8 = Bits.NthBit(binSeq, 7);
-            if (!Bits.HasEvenOnes(hcode8 ^ bit8))
+            if (!Bits.HasEvenOnes(hcode8))
                 bitToCorrect += 8;
 
-            uint hcode16 = Hamming32Bit.HammingCode16(binSeq) << 1;
+            uint hcode16 = Hamming32Bit.HammingCode16(binSeq);
             uint bit16 = Bits.NthBit(binSeq, 15);
-            if (!Bits.HasEvenOnes(hcode16 ^ bit16))
+            if (!Bits.HasEvenOnes(hcode16))
                 bitToCorrect += 16;
 
             bitToCorrect -= 1;
@@ -358,11 +359,7 @@ namespace Csci351DC1ftp
 
             if (bitToCorrect > -1)
             {
-                uint corrected = Bits.FlipNthBit(binSeq, (byte)bitToCorrect);
-                Console.WriteLine("Error on bit {0}:", bitToCorrect);
-                Console.WriteLine("\tBefore: {0}", Bits.Int32ToBinStr(binSeq));
-                Console.WriteLine("\tAfter:  {0}", Bits.Int32ToBinStr(corrected));
-                return corrected;
+                return Bits.FlipNthBit(binSeq, (byte)bitToCorrect);
             }
                 
             
